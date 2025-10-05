@@ -1,6 +1,8 @@
 import { Navigation } from "@/components/Navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/Footer";
+import { TrendingProducts } from "@/components/TrendingProducts";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -134,6 +136,9 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Trending Products Section */}
+      <TrendingProducts />
+
       {/* Products Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
@@ -187,6 +192,8 @@ const Home = () => {
           )}
         </div>
       </section>
+
+      <Footer />
     </div>
   );
 };

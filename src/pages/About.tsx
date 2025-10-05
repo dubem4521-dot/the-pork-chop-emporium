@@ -1,23 +1,42 @@
 import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
+import { Footer } from "@/components/Footer";
+import { ByTheNumbers } from "@/components/ByTheNumbers";
 import { Heart, Award, Users } from "lucide-react";
+import heroImage from "@/assets/hero-farm.jpg";
 
 const About = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-20">
-        {/* Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <h1 className="text-5xl font-bold text-foreground mb-6">About Our Farm</h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            The story of Tinahe & Jeff's commitment to quality, sustainability, and exceptional pork products.
-          </p>
+      {/* Hero Section */}
+      <section className="relative h-[400px] overflow-hidden">
+        <img
+          src={heroImage}
+          alt="Our Farm - Premium Pork Since 2019"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
+        
+        <div className="absolute inset-0 flex items-center">
+          <div className="container mx-auto px-4">
+            <div className="max-w-2xl animate-fade-in-up">
+              <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
+                About Our Farm
+              </h1>
+              <p className="text-xl text-white/90 drop-shadow-md">
+                The story of Tinahe & Jeff's commitment to quality, sustainability, and exceptional pork products.
+              </p>
+            </div>
+          </div>
         </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-20">
 
         {/* Story Section */}
-        <div className="max-w-4xl mx-auto mb-20 animate-fade-in-up">
+        <div className="max-w-4xl mx-auto mb-20 animate-fade-in-up -mt-16 relative z-10">
           <Card className="p-8 md:p-12 shadow-[var(--shadow-card)]">
             <h2 className="text-3xl font-bold text-foreground mb-6">Our Story</h2>
             <div className="space-y-4 text-muted-foreground leading-relaxed">
@@ -87,6 +106,11 @@ const About = () => {
           </Card>
         </div>
       </div>
+
+      {/* By The Numbers Section */}
+      <ByTheNumbers />
+
+      <Footer />
     </div>
   );
 };

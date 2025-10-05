@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, User } from "lucide-react";
+import { ShoppingCart, User, Beef } from "lucide-react";
 import { Button } from "./ui/button";
 
 export const Navigation = () => {
@@ -11,8 +11,12 @@ export const Navigation = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="text-2xl font-bold text-primary group-hover:scale-105 transition-transform">
-              Tinahe & Jeff's Farm
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform shadow-[var(--shadow-warm)]">
+              <Beef className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">T&J Farm</span>
+              <span className="text-xs text-muted-foreground">Premium Pork</span>
             </div>
           </Link>
 

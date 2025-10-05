@@ -27,11 +27,6 @@ const Cart = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
     loadCart();
 
     // Subscribe to cart changes
@@ -54,7 +49,7 @@ const Cart = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, navigate]);
+  }, [user]);
 
   const loadCart = async () => {
     if (!user) return;
@@ -192,7 +187,14 @@ const Cart = () => {
       <div className="container mx-auto px-4 py-20">
         <h1 className="text-4xl font-bold text-foreground mb-12 animate-fade-in">Shopping Cart</h1>
 
-        {cartItems.length === 0 ? (
+        {!user ? (
+          <Card className="p-12 text-center animate-fade-in">
+            <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-foreground mb-4">Please Login</h2>
+            <p className="text-muted-foreground mb-8">You need to be logged in to view your cart.</p>
+            <Button variant="hero" size="lg" onClick={() => navigate("/auth")}>Login / Sign Up</Button>
+          </Card>
+        ) : cartItems.length === 0 ? (
           <Card className="p-12 text-center animate-fade-in">
             <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-foreground mb-4">Your cart is empty</h2>

@@ -25,9 +25,12 @@ interface Order {
   total: number;
   status: string;
   created_at: string;
+  user_id: string;
   profiles: {
     email: string;
     full_name: string | null;
+    phone: string | null;
+    address: string | null;
   };
 }
 
@@ -115,9 +118,12 @@ const AdminDashboard = () => {
         total,
         status,
         created_at,
-        profiles (
+        user_id,
+        profiles!orders_user_id_fkey (
           email,
-          full_name
+          full_name,
+          phone,
+          address
         )
       `)
       .order("created_at", { ascending: false });
@@ -142,6 +148,32 @@ const AdminDashboard = () => {
   const handleAddProduct = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const imageFile = formData.get("product-image") as File;
+
+    let imageUrl = "/placeholder.svg";
+
+    // Upload image if provided
+    if (imageFile && imageFile.size > 0) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, imageFile);
+
+      if (uploadError) {
+        toast.error("Failed to upload image");
+        console.error(uploadError);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      imageUrl = publicUrl;
+    }
 
     const { error } = await supabase
       .from("products")
@@ -150,7 +182,7 @@ const AdminDashboard = () => {
         price: parseFloat(formData.get("product-price") as string),
         stock: parseInt(formData.get("product-stock") as string),
         description: formData.get("product-description") as string,
-        image_url: "/placeholder.svg",
+        image_url: imageUrl,
       });
 
     if (error) {
@@ -308,34 +340,37 @@ const AdminDashboard = () => {
                   <TableRow>
                     <TableHead>Order ID</TableHead>
                     <TableHead>Customer</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Address</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {orders.map((order) => (
-                    <TableRow key={order.id}>
+                    <TableRow key={order.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell className="font-medium">#{order.id.substring(0, 8)}</TableCell>
-                      <TableCell>{order.profiles.email}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{order.profiles.full_name || "N/A"}</p>
+                          <p className="text-xs text-muted-foreground">{order.profiles.email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm">{order.profiles.phone || "N/A"}</TableCell>
+                      <TableCell className="text-sm max-w-xs truncate">{order.profiles.address || "N/A"}</TableCell>
                       <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>R{Number(order.total).toFixed(2)}</TableCell>
+                      <TableCell className="font-semibold">R{Number(order.total).toFixed(2)}</TableCell>
                       <TableCell>
                         <select 
                           value={order.status}
                           onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="px-2 py-1 rounded border border-border bg-background text-foreground text-xs"
+                          className="px-3 py-1.5 rounded-md border border-border bg-background text-foreground text-sm font-medium hover:bg-muted transition-colors"
                         >
                           <option value="pending">Pending</option>
                           <option value="processing">Processing</option>
                           <option value="completed">Completed</option>
                         </select>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">
-                          View Details
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -391,6 +426,20 @@ const AdminDashboard = () => {
                     placeholder="Product description"
                     required
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="product-image">Product Image</Label>
+                  <Input
+                    id="product-image"
+                    name="product-image"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/jpg"
+                    className="cursor-pointer"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Upload a product image (max 5MB, JPG/PNG/WEBP)
+                  </p>
                 </div>
 
                 <Button type="submit" variant="hero" size="lg" className="w-full">

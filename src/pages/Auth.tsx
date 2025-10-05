@@ -43,8 +43,10 @@ const Auth = () => {
     const email = formData.get("signup-email") as string;
     const password = formData.get("signup-password") as string;
     const fullName = formData.get("signup-name") as string;
+    const phone = formData.get("signup-phone") as string;
+    const address = formData.get("signup-address") as string;
 
-    const { error } = await supabase.auth.signUp({
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -55,11 +57,25 @@ const Auth = () => {
       },
     });
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Account created! You can now login.");
+    if (authError) {
+      toast.error(authError.message);
+      setIsLoading(false);
+      return;
     }
+
+    // Update profile with phone and address
+    if (authData.user) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ phone, address })
+        .eq("id", authData.user.id);
+
+      if (profileError) {
+        console.error("Error updating profile:", profileError);
+      }
+    }
+
+    toast.success("Account created! You can now login.");
     setIsLoading(false);
   };
 
@@ -137,6 +153,27 @@ const Auth = () => {
                       name="signup-email"
                       type="email"
                       placeholder="your@email.com"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-phone">Phone Number</Label>
+                    <Input
+                      id="signup-phone"
+                      name="signup-phone"
+                      type="tel"
+                      placeholder="+27 123 456 789"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-address">Delivery Address</Label>
+                    <Input
+                      id="signup-address"
+                      name="signup-address"
+                      placeholder="Street address, City, Postal Code"
                       required
                     />
                   </div>
