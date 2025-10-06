@@ -79,7 +79,7 @@ const AdminLogin = () => {
             <Lock className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Admin Access</h1>
-          <p className="text-muted-foreground">Tinahe & Jeff's Farm Management</p>
+          <p className="text-muted-foreground">Tinashe & Jeff's Farm Management</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">

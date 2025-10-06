@@ -26,7 +26,7 @@ const About = () => {
                 About Our Farm
               </h1>
               <p className="text-xl text-white/90 drop-shadow-md">
-                The story of Tinahe & Jeff's commitment to quality, sustainability, and exceptional pork products.
+                The story of Tinashe & Jeff's commitment to quality, sustainability, and exceptional pork products.
               </p>
             </div>
           </div>
@@ -41,16 +41,16 @@ const About = () => {
             <h2 className="text-3xl font-bold text-foreground mb-6">Our Story</h2>
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                Founded in 2019, Tinahe & Jeff's Farm began with a simple vision: to provide families with the highest quality pork, raised with care and respect. What started as a small operation has grown into a trusted source for premium pork products.
+                Founded in 2019, Tinashe & Jeff's Farm began with a simple vision: to provide families with the highest quality pork, raised with care and respect. What started as a small operation has grown into a trusted source for premium pork products.
               </p>
               <p>
                 Our farm is built on the principles of ethical animal husbandry, sustainable farming practices, and a deep commitment to quality. Every pig on our farm is raised in a clean, stress-free environment with plenty of space to roam and natural feed.
               </p>
               <p>
-                Tinahe and Jeff personally oversee every aspect of the operation, from the care of the animals to the processing and delivery of the final product. This hands-on approach ensures that every cut of meat meets our exacting standards.
+                Tinashe and Jeff personally oversee every aspect of the operation, from the care of the animals to the processing and delivery of the final product. This hands-on approach ensures that every cut of meat meets our exacting standards.
               </p>
               <p>
-                When you purchase from Tinahe & Jeff's Farm, you're not just buying pork – you're supporting a family business dedicated to traditional farming values and exceptional quality.
+                When you purchase from Tinashe & Jeff's Farm, you're not just buying pork – you're supporting a family business dedicated to traditional farming values and exceptional quality.
               </p>
             </div>
           </Card>
@@ -101,7 +101,7 @@ const About = () => {
             </p>
             <p className="text-foreground font-medium">
               Established: 2019<br />
-              Owners: Tinahe & Jeff
+              Owners: Tinashe & Jeff
             </p>
           </Card>
         </div>

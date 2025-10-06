@@ -27,6 +27,11 @@ const Cart = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     loadCart();
 
     // Subscribe to cart changes
@@ -114,6 +119,7 @@ const Cart = () => {
   const handleCheckout = async () => {
     if (!user) {
       toast.error("Please login to checkout");
+      navigate("/auth");
       return;
     }
 
@@ -122,13 +128,15 @@ const Cart = () => {
       return;
     }
 
-    // Create order
+    // Create order with payment info
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         user_id: user.id,
         total: total,
         status: "pending",
+        payment_status: "pending",
+        payment_method: "cash_on_delivery",
       })
       .select()
       .single();

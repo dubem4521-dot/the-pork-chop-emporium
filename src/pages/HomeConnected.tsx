@@ -3,11 +3,11 @@ import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { TrendingProducts } from "@/components/TrendingProducts";
+import { HeroCarousel } from "@/components/HeroCarousel";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import heroImage from "@/assets/hero-farm.jpg";
 
 interface Product {
   id: string;
@@ -110,31 +110,8 @@ const Home = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="relative h-[600px] overflow-hidden">
-        <img
-          src={heroImage}
-          alt="Tinahe & Jeff's Farm - Premium Pork Since 2019"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
-        
-        <div className="absolute inset-0 flex items-center">
-          <div className="container mx-auto px-4">
-            <div className="max-w-2xl animate-fade-in-up">
-              <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 drop-shadow-lg">
-                Premium Pork from Our Farm to Your Table
-              </h1>
-              <p className="text-xl text-white/90 mb-8 drop-shadow-md">
-                Since 2019, Tinahe & Jeff have been raising the finest pigs with care and dedication. Experience the difference of farm-fresh quality.
-              </p>
-              <Button variant="hero" size="lg" className="text-lg">
-                Shop Our Products
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Carousel */}
+      <HeroCarousel />
 
       {/* Trending Products Section */}
       <TrendingProducts />

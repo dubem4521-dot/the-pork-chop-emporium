@@ -111,29 +111,35 @@ const AdminDashboard = () => {
   };
 
   const loadOrders = async () => {
-    const { data, error } = await supabase
+    // First get orders
+    const { data: ordersData, error: ordersError } = await supabase
       .from("orders")
-      .select(`
-        id,
-        total,
-        status,
-        created_at,
-        user_id,
-        profiles!orders_user_id_fkey (
-          email,
-          full_name,
-          phone,
-          address
-        )
-      `)
+      .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
+    if (ordersError) {
       toast.error("Failed to load orders");
-      console.error(error);
-    } else {
-      setOrders(data as unknown as Order[]);
+      console.error(ordersError);
+      return;
     }
+
+    // Then get profiles for each order
+    const ordersWithProfiles = await Promise.all(
+      (ordersData || []).map(async (order) => {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("email, full_name, phone, address")
+          .eq("id", order.user_id)
+          .single();
+
+        return {
+          ...order,
+          profiles: profile || { email: "N/A", full_name: null, phone: null, address: null }
+        };
+      })
+    );
+
+    setOrders(ordersWithProfiles as Order[]);
   };
 
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0);
