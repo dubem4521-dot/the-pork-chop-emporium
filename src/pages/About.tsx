@@ -14,7 +14,7 @@ const About = () => {
       <section className="relative h-[400px] overflow-hidden">
         <img
           src={heroImage}
-          alt="Our Farm - Premium Pork Since 2019"
+          alt="Our Farm - Premium Pork Since 2022"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
@@ -41,7 +41,7 @@ const About = () => {
             <h2 className="text-3xl font-bold text-foreground mb-6">Our Story</h2>
             <div className="space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                Founded in 2019, Tinashe & Jeff's Farm began with a simple vision: to provide families with the highest quality pork, raised with care and respect. What started as a small operation has grown into a trusted source for premium pork products.
+                Founded in 2022, Tinashe & Jeff's Farm began with a simple vision: to provide families with the highest quality pork, raised with care and respect. What started as a small operation has grown into a trusted source for premium pork products.
               </p>
               <p>
                 Our farm is built on the principles of ethical animal husbandry, sustainable farming practices, and a deep commitment to quality. Every pig on our farm is raised in a clean, stress-free environment with plenty of space to roam and natural feed.
@@ -100,7 +100,7 @@ const About = () => {
               We welcome visitors to see our operation firsthand. Contact us to schedule a farm tour and meet the team behind your premium pork.
             </p>
             <p className="text-foreground font-medium">
-              Established: 2019<br />
+              Established: 2022<br />
               Owners: Tinashe & Jeff
             </p>
           </Card>

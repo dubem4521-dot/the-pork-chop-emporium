@@ -116,7 +116,9 @@ const Cart = () => {
   const tax = subtotal * 0.15;
   const total = subtotal + tax;
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
     if (!user) {
       toast.error("Please login to checkout");
       navigate("/auth");
@@ -128,7 +130,11 @@ const Cart = () => {
       return;
     }
 
-    // Create order with payment info
+    const formData = new FormData(e.currentTarget);
+    const phone = formData.get("phone") as string;
+    const address = formData.get("address") as string;
+
+    // Create order with payment info and contact details
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
@@ -137,6 +143,8 @@ const Cart = () => {
         status: "pending",
         payment_status: "pending",
         payment_method: "cash_on_delivery",
+        phone: phone,
+        address: address,
       })
       .select()
       .single();
@@ -283,14 +291,44 @@ const Cart = () => {
                   </div>
                 </div>
 
-                <Button 
-                  variant="hero" 
-                  size="lg" 
-                  className="w-full"
-                  onClick={handleCheckout}
-                >
-                  Proceed to Checkout
-                </Button>
+                <form onSubmit={handleCheckout} className="space-y-4">
+                  <div className="space-y-2">
+                    <label htmlFor="phone" className="text-sm font-medium text-foreground">
+                      Phone Number
+                    </label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      required
+                      placeholder="+27 123 456 789"
+                      className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label htmlFor="address" className="text-sm font-medium text-foreground">
+                      Delivery Address
+                    </label>
+                    <textarea
+                      id="address"
+                      name="address"
+                      required
+                      rows={3}
+                      placeholder="Enter your full delivery address"
+                      className="w-full px-3 py-2 rounded-md border border-border bg-background text-foreground resize-none"
+                    />
+                  </div>
+
+                  <Button 
+                    type="submit"
+                    variant="hero" 
+                    size="lg" 
+                    className="w-full"
+                  >
+                    Confirm Order
+                  </Button>
+                </form>
                 
                 <p className="text-xs text-muted-foreground text-center mt-4">
                   Secure checkout • Free delivery on orders over R500

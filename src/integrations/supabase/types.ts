@@ -90,31 +90,37 @@ export type Database = {
       }
       orders: {
         Row: {
+          address: string | null
           created_at: string | null
           id: string
           payment_date: string | null
           payment_method: string | null
           payment_status: string | null
+          phone: string | null
           status: string
           total: number
           user_id: string
         }
         Insert: {
+          address?: string | null
           created_at?: string | null
           id?: string
           payment_date?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          phone?: string | null
           status?: string
           total: number
           user_id: string
         }
         Update: {
+          address?: string | null
           created_at?: string | null
           id?: string
           payment_date?: string | null
           payment_method?: string | null
           payment_status?: string | null
+          phone?: string | null
           status?: string
           total?: number
           user_id?: string

@@ -5,7 +5,7 @@ export const ByTheNumbers = () => {
   const stats = [
     {
       icon: TrendingUp,
-      number: "2019",
+      number: "2022",
       label: "Year Established",
       description: "Years of excellence"
     },

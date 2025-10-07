@@ -10,7 +10,7 @@ export const Footer = () => {
           <div className="space-y-4 animate-fade-in">
             <h3 className="text-lg font-bold text-foreground">Tinashe & Jeff's Farm</h3>
             <p className="text-sm text-muted-foreground">
-              Premium pork products from our farm to your table since 2019. Quality, care, and tradition in every cut.
+              Premium pork products from our farm to your table since 2022. Quality, care, and tradition in every cut.
             </p>
           </div>
 

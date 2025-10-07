@@ -64,7 +64,7 @@ export const Navigation = () => {
             <img 
               src={logo} 
               alt="PureBreed Pork - Tinashe & Jeff" 
-              className="h-14 w-14 object-contain group-hover:scale-105 transition-transform"
+              className="h-20 w-20 object-contain group-hover:scale-105 transition-transform"
             />
           </Link>
 

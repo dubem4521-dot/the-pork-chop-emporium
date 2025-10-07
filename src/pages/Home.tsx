@@ -66,7 +66,7 @@ const Home = () => {
                 Premium Pork from Our Farm to Your Table
               </h1>
               <p className="text-xl text-white/90 mb-8 drop-shadow-md">
-                Since 2019, Tinahe & Jeff have been raising the finest pigs with care and dedication. Experience the difference of farm-fresh quality.
+                Since 2022, Tinahe & Jeff have been raising the finest pigs with care and dedication. Experience the difference of farm-fresh quality.
               </p>
               <Button variant="hero" size="lg" className="text-lg">
                 Shop Our Products

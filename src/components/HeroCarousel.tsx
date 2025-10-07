@@ -9,7 +9,7 @@ const slides = [
   {
     image: heroImage,
     title: "Premium Pork from Our Farm to Your Table",
-    description: "Since 2019, Tinashe & Jeff have been raising the finest pigs with care and dedication. Experience the difference of farm-fresh quality."
+    description: "Since 2022, Tinashe & Jeff have been raising the finest pigs with care and dedication. Experience the difference of farm-fresh quality."
   },
   {
     image: porkChops,

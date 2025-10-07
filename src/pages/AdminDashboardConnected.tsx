@@ -26,11 +26,11 @@ interface Order {
   status: string;
   created_at: string;
   user_id: string;
+  phone: string | null;
+  address: string | null;
   profiles: {
     email: string;
     full_name: string | null;
-    phone: string | null;
-    address: string | null;
   };
 }
 
@@ -111,7 +111,7 @@ const AdminDashboard = () => {
   };
 
   const loadOrders = async () => {
-    // First get orders
+    // Get orders with phone and address
     const { data: ordersData, error: ordersError } = await supabase
       .from("orders")
       .select("*")
@@ -123,18 +123,18 @@ const AdminDashboard = () => {
       return;
     }
 
-    // Then get profiles for each order
+    // Then get profiles for each order (just email and name)
     const ordersWithProfiles = await Promise.all(
       (ordersData || []).map(async (order) => {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("email, full_name, phone, address")
+          .select("email, full_name")
           .eq("id", order.user_id)
           .single();
 
         return {
           ...order,
-          profiles: profile || { email: "N/A", full_name: null, phone: null, address: null }
+          profiles: profile || { email: "N/A", full_name: null }
         };
       })
     );
@@ -363,8 +363,8 @@ const AdminDashboard = () => {
                           <p className="text-xs text-muted-foreground">{order.profiles.email}</p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm">{order.profiles.phone || "N/A"}</TableCell>
-                      <TableCell className="text-sm max-w-xs truncate">{order.profiles.address || "N/A"}</TableCell>
+                      <TableCell className="text-sm">{order.phone || "N/A"}</TableCell>
+                      <TableCell className="text-sm max-w-xs truncate">{order.address || "N/A"}</TableCell>
                       <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
                       <TableCell className="font-semibold">R{Number(order.total).toFixed(2)}</TableCell>
                       <TableCell>
