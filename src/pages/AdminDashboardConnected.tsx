@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { toast } from "sonner";
-import { Package, ShoppingCart, DollarSign, Plus, Edit, Trash2, LogOut } from "lucide-react";
+import { Package, ShoppingCart, DollarSign, Plus, Edit, Trash2, LogOut, TrendingUp, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 interface Product {
   id: string;
@@ -40,6 +42,7 @@ const AdminDashboard = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [trafficPeriod, setTrafficPeriod] = useState<"day" | "week" | "month">("week");
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -144,6 +147,86 @@ const AdminDashboard = () => {
 
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0);
   const pendingOrders = orders.filter(o => o.status === "pending").length;
+
+  // Traffic data based on orders
+  const getTrafficData = () => {
+    const now = new Date();
+    const data: { name: string; orders: number }[] = [];
+
+    if (trafficPeriod === "day") {
+      for (let i = 23; i >= 0; i--) {
+        const hour = new Date(now.getTime() - i * 60 * 60 * 1000);
+        const hourOrders = orders.filter(o => {
+          const orderDate = new Date(o.created_at);
+          return orderDate.getHours() === hour.getHours() &&
+                 orderDate.getDate() === hour.getDate();
+        });
+        data.push({
+          name: `${hour.getHours()}:00`,
+          orders: hourOrders.length
+        });
+      }
+    } else if (trafficPeriod === "week") {
+      for (let i = 6; i >= 0; i--) {
+        const day = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayOrders = orders.filter(o => {
+          const orderDate = new Date(o.created_at);
+          return orderDate.toDateString() === day.toDateString();
+        });
+        data.push({
+          name: day.toLocaleDateString('en-US', { weekday: 'short' }),
+          orders: dayOrders.length
+        });
+      }
+    } else {
+      for (let i = 29; i >= 0; i--) {
+        const day = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const dayOrders = orders.filter(o => {
+          const orderDate = new Date(o.created_at);
+          return orderDate.toDateString() === day.toDateString();
+        });
+        data.push({
+          name: day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          orders: dayOrders.length
+        });
+      }
+    }
+    
+    return data;
+  };
+
+  // Top customers data
+  const getTopCustomers = () => {
+    const customerOrders: { [key: string]: { name: string; email: string; total: number; count: number } } = {};
+    
+    orders.forEach(order => {
+      const userId = order.user_id;
+      if (!customerOrders[userId]) {
+        customerOrders[userId] = {
+          name: order.profiles.full_name || "N/A",
+          email: order.profiles.email,
+          total: 0,
+          count: 0
+        };
+      }
+      customerOrders[userId].total += Number(order.total);
+      customerOrders[userId].count += 1;
+    });
+
+    return Object.values(customerOrders)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5)
+      .map(customer => ({
+        name: customer.name,
+        value: customer.total,
+        orders: customer.count
+      }));
+  };
+
+  const trafficData = getTrafficData();
+  const topCustomers = getTopCustomers();
+  
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--secondary))', '#10b981', '#f59e0b'];
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -290,6 +373,115 @@ const AdminDashboard = () => {
                 <p className="text-2xl font-bold text-foreground">R{totalRevenue.toFixed(2)}</p>
               </div>
             </div>
+          </Card>
+        </div>
+
+        {/* Analytics Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card className="p-6 animate-fade-in">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-bold text-foreground">Traffic Overview</h2>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={trafficPeriod === "day" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTrafficPeriod("day")}
+                >
+                  Day
+                </Button>
+                <Button
+                  variant={trafficPeriod === "week" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTrafficPeriod("week")}
+                >
+                  Week
+                </Button>
+                <Button
+                  variant={trafficPeriod === "month" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setTrafficPeriod("month")}
+                >
+                  Month
+                </Button>
+              </div>
+            </div>
+            <ChartContainer
+              config={{
+                orders: {
+                  label: "Orders",
+                  color: "hsl(var(--primary))",
+                },
+              }}
+              className="h-[300px]"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={trafficData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="orders" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </Card>
+
+          <Card className="p-6 animate-fade-in">
+            <div className="flex items-center gap-2 mb-6">
+              <Users className="h-5 w-5 text-accent" />
+              <h2 className="text-xl font-bold text-foreground">Top Customers</h2>
+            </div>
+            {topCustomers.length > 0 ? (
+              <>
+                <ChartContainer
+                  config={{
+                    value: {
+                      label: "Total Spent",
+                      color: "hsl(var(--primary))",
+                    },
+                  }}
+                  className="h-[200px] mb-4"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={topCustomers}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={80}
+                        fill="hsl(var(--primary))"
+                        dataKey="value"
+                      >
+                        {topCustomers.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+                <div className="space-y-3">
+                  {topCustomers.map((customer, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                        <span className="font-medium text-sm">{customer.name}</span>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-sm">R{customer.value.toFixed(2)}</p>
+                        <p className="text-xs text-muted-foreground">{customer.orders} orders</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="text-muted-foreground text-center py-8">No customer data yet</p>
+            )}
           </Card>
         </div>
 

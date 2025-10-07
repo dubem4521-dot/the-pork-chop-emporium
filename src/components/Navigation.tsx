@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ShoppingCart, User } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { Avatar, AvatarFallback } from "./ui/avatar";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,15 +12,18 @@ export const Navigation = () => {
   const location = useLocation();
   const { user } = useAuth();
   const [cartCount, setCartCount] = useState(0);
+  const [userName, setUserName] = useState("");
   const isActive = (path: string) => location.pathname === path;
 
   useEffect(() => {
     if (!user) {
       setCartCount(0);
+      setUserName("");
       return;
     }
 
     loadCartCount();
+    loadUserProfile();
 
     const channel = supabase
       .channel('cart-count-changes')
@@ -53,6 +57,20 @@ export const Navigation = () => {
     if (!error && data) {
       const total = data.reduce((sum, item) => sum + item.quantity, 0);
       setCartCount(total);
+    }
+  };
+
+  const loadUserProfile = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+
+    if (data?.full_name) {
+      setUserName(data.full_name);
     }
   };
 
@@ -95,11 +113,21 @@ export const Navigation = () => {
                 )}
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
-            </Link>
+            {user ? (
+              <Link to="/profile">
+                <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                    {userName ? userName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            ) : (
+              <Link to="/auth">
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>
