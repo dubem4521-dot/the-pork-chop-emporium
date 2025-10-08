@@ -5,11 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [step, setStep] = useState<'email' | 'otp'>('email');
+  const [email, setEmail] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,17 +34,44 @@ const AdminLogin = () => {
     checkAdmin();
   }, [navigate]);
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSendOTP = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    const email = formData.get("admin-email") as string;
-    const password = formData.get("admin-password") as string;
+    const emailInput = formData.get("admin-email") as string;
+    setEmail(emailInput);
 
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    // Send OTP to email
+    const { error } = await supabase.auth.signInWithOtp({
+      email: emailInput,
+      options: {
+        shouldCreateUser: false, // Don't create new users
+      },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    toast.success("Verification code sent to your email");
+    setStep('otp');
+    setIsLoading(false);
+  };
+
+  const handleVerifyOTP = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const token = formData.get("otp") as string;
+
+    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
       email,
-      password,
+      token,
+      type: 'email',
     });
 
     if (authError) {
@@ -76,45 +105,78 @@ const AdminLogin = () => {
       <Card className="w-full max-w-md p-8 animate-scale-in">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Lock className="h-8 w-8 text-primary" />
+            {step === 'email' ? (
+              <Mail className="h-8 w-8 text-primary" />
+            ) : (
+              <Lock className="h-8 w-8 text-primary" />
+            )}
           </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Admin Access</h1>
-          <p className="text-muted-foreground">Tinashe & Jeff's Farm Management</p>
+          <p className="text-muted-foreground">
+            {step === 'email' 
+              ? 'Enter your admin email to receive a verification code' 
+              : 'Enter the 6-digit code sent to your email'}
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="admin-email">Admin Email</Label>
-            <Input
-              id="admin-email"
-              name="admin-email"
-              type="email"
-              placeholder="admin@farm.com"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="admin-password">Password</Label>
-            <Input
-              id="admin-password"
-              name="admin-password"
-              type="password"
-              placeholder="••••••••"
-              required
-            />
-          </div>
+        {step === 'email' ? (
+          <form onSubmit={handleSendOTP} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="admin-email">Admin Email</Label>
+              <Input
+                id="admin-email"
+                name="admin-email"
+                type="email"
+                placeholder="dubem4521@gmail.com"
+                required
+              />
+            </div>
 
-          <Button
-            type="submit"
-            variant="hero"
-            size="lg"
-            className="w-full"
-            disabled={isLoading}
-          >
-            {isLoading ? "Authenticating..." : "Access Dashboard"}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              variant="hero"
+              size="lg"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "Sending Code..." : "Send Verification Code"}
+            </Button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOTP} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="otp">Verification Code</Label>
+              <Input
+                id="otp"
+                name="otp"
+                type="text"
+                placeholder="000000"
+                maxLength={6}
+                required
+                className="text-center text-2xl tracking-widest"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              variant="hero"
+              size="lg"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "Verifying..." : "Verify & Access Dashboard"}
+            </Button>
+
+            <Button
+              type="button"
+              variant="link"
+              onClick={() => setStep('email')}
+              className="w-full"
+            >
+              Use Different Email
+            </Button>
+          </form>
+        )}
 
         <div className="mt-6 text-center">
           <Button
