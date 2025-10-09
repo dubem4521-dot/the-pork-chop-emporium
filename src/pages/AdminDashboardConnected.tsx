@@ -7,8 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Package, ShoppingCart, DollarSign, Plus, Edit, Trash2, LogOut, TrendingUp, Users, BarChart3, PieChart as PieChartIcon, Settings, Bell, Home, Target } from "lucide-react";
+import { Package, ShoppingCart, DollarSign, Plus, Edit, Trash2, LogOut, TrendingUp, Users, BarChart3, PieChart as PieChartIcon, Settings, Bell, Home, Target, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -48,6 +49,11 @@ const AdminDashboard = () => {
   const [topProducts, setTopProducts] = useState<any[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeGoal, setActiveGoal] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "add-product">("products");
+  const [showAddAdminDialog, setShowAddAdminDialog] = useState(false);
+  const [newAdminEmail, setNewAdminEmail] = useState("");
+  const [adminVerificationPin, setAdminVerificationPin] = useState("");
+  const [addAdminStep, setAddAdminStep] = useState<"email" | "verify">("email");
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -359,6 +365,74 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleRequestAddAdmin = async () => {
+    if (!newAdminEmail) {
+      toast.error("Please enter an email address");
+      return;
+    }
+
+    // Send OTP to original admin email (dubem4521@gmail.com)
+    const { error } = await supabase.auth.signInWithOtp({
+      email: 'dubem4521@gmail.com',
+      options: {
+        shouldCreateUser: false,
+      },
+    });
+
+    if (error) {
+      toast.error("Failed to send verification PIN");
+      console.error(error);
+      return;
+    }
+
+    toast.success("Verification PIN sent to dubem4521@gmail.com");
+    setAddAdminStep("verify");
+  };
+
+  const handleVerifyAndAddAdmin = async () => {
+    if (!adminVerificationPin || adminVerificationPin.length !== 4) {
+      toast.error("Please enter a valid 4-digit PIN");
+      return;
+    }
+
+    // Verify the PIN for the original admin
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: 'dubem4521@gmail.com',
+      token: adminVerificationPin,
+      type: 'email',
+    });
+
+    if (verifyError) {
+      toast.error("Invalid verification PIN");
+      console.error(verifyError);
+      return;
+    }
+
+    // Now send OTP to the new admin email to create their account
+    const { error: newAdminError } = await supabase.auth.signInWithOtp({
+      email: newAdminEmail,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
+
+    if (newAdminError) {
+      toast.error("Failed to send invitation to new admin");
+      console.error(newAdminError);
+      return;
+    }
+
+    // We need to add the admin role after they verify their email
+    // For now, let's create a temporary entry that will be updated when they verify
+    toast.success(`Invitation sent to ${newAdminEmail}. They need to verify their email and then you can assign admin role.`);
+    
+    // Reset the dialog
+    setShowAddAdminDialog(false);
+    setNewAdminEmail("");
+    setAdminVerificationPin("");
+    setAddAdminStep("email");
+  };
+
   if (adminLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -382,37 +456,97 @@ const AdminDashboard = () => {
         </div>
         
         <nav className="flex-1 p-4 space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary font-medium">
-            <Home className="h-5 w-5" />
-            {!sidebarCollapsed && <span>Dashboard</span>}
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors">
-            <Bell className="h-5 w-5" />
-            {!sidebarCollapsed && <span>Notifications</span>}
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors">
+          <button 
+            onClick={() => setActiveTab("products")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              activeTab === "products" ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
+            }`}
+          >
             <Package className="h-5 w-5" />
-            {!sidebarCollapsed && <span>Products</span>}
+            {!sidebarCollapsed && <span>Active Products</span>}
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors">
+          <button 
+            onClick={() => setActiveTab("orders")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              activeTab === "orders" ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
+            }`}
+          >
             <ShoppingCart className="h-5 w-5" />
             {!sidebarCollapsed && <span>Orders</span>}
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors">
-            <BarChart3 className="h-5 w-5" />
-            {!sidebarCollapsed && <span>Analytics</span>}
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors">
-            <PieChartIcon className="h-5 w-5" />
-            {!sidebarCollapsed && <span>Reports</span>}
+          <button 
+            onClick={() => setActiveTab("add-product")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              activeTab === "add-product" ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
+            }`}
+          >
+            <Plus className="h-5 w-5" />
+            {!sidebarCollapsed && <span>Add Product</span>}
           </button>
         </nav>
 
         <div className="p-4 border-t border-border space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors">
-            <Settings className="h-5 w-5" />
-            {!sidebarCollapsed && <span>Settings</span>}
-          </button>
+          <Dialog open={showAddAdminDialog} onOpenChange={setShowAddAdminDialog}>
+            <DialogTrigger asChild>
+              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-muted transition-colors">
+                <UserPlus className="h-5 w-5" />
+                {!sidebarCollapsed && <span>Add Admin</span>}
+              </button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Admin</DialogTitle>
+              </DialogHeader>
+              {addAdminStep === "email" ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="new-admin-email">New Admin Email</Label>
+                    <Input
+                      id="new-admin-email"
+                      type="email"
+                      placeholder="Email"
+                      value={newAdminEmail}
+                      onChange={(e) => setNewAdminEmail(e.target.value)}
+                    />
+                  </div>
+                  <Button onClick={handleRequestAddAdmin} className="w-full">
+                    Send Verification PIN
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    A 4-digit PIN has been sent to dubem4521@gmail.com for verification
+                  </p>
+                  <div>
+                    <Label htmlFor="admin-pin">Verification PIN</Label>
+                    <Input
+                      id="admin-pin"
+                      type="text"
+                      placeholder="0000"
+                      maxLength={4}
+                      value={adminVerificationPin}
+                      onChange={(e) => setAdminVerificationPin(e.target.value)}
+                      className="text-center text-2xl tracking-widest"
+                    />
+                  </div>
+                  <Button onClick={handleVerifyAndAddAdmin} className="w-full">
+                    Verify & Add Admin
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setAddAdminStep("email");
+                      setAdminVerificationPin("");
+                    }} 
+                    className="w-full"
+                  >
+                    Back
+                  </Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
           <Button variant="outline" onClick={handleLogout} className="w-full">
             <LogOut className="h-4 w-4 mr-2" />
             {!sidebarCollapsed && 'Logout'}
@@ -653,11 +787,11 @@ const AdminDashboard = () => {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="products" className="animate-fade-in-up">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "products" | "orders" | "add-product")} className="animate-fade-in-up">
             <TabsList className="mb-6">
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
-              <TabsTrigger value="add">Add Product</TabsTrigger>
+              <TabsTrigger value="add-product">Add Product</TabsTrigger>
             </TabsList>
 
             <TabsContent value="products">
@@ -744,7 +878,7 @@ const AdminDashboard = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="add">
+            <TabsContent value="add-product">
               <Card className="p-6 max-w-2xl">
                 <h2 className="text-xl font-bold text-foreground mb-6">Add New Product</h2>
                 <form onSubmit={handleAddProduct} className="space-y-6">

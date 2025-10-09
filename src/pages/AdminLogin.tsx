@@ -115,7 +115,7 @@ const AdminLogin = () => {
           <p className="text-muted-foreground">
             {step === 'email' 
               ? 'Enter your admin email to receive a verification code' 
-              : 'Enter the 6-digit code sent to your email'}
+              : 'Enter the 4-digit code sent to your email'}
           </p>
         </div>
 
@@ -127,7 +127,7 @@ const AdminLogin = () => {
                 id="admin-email"
                 name="admin-email"
                 type="email"
-                placeholder="dubem4521@gmail.com"
+                placeholder="Email"
                 required
               />
             </div>
@@ -150,10 +150,10 @@ const AdminLogin = () => {
                 id="otp"
                 name="otp"
                 type="text"
-                placeholder="000000"
-                maxLength={6}
+                placeholder="0000"
+                maxLength={4}
                 required
-                className="text-center text-2xl tracking-widest"
+                className="text-center text-3xl tracking-widest"
               />
             </div>
 
