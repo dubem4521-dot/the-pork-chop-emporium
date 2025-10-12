@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_pins: {
+        Row: {
+          created_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          pin: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          expires_at: string
+          id?: string
+          pin: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          pin?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string | null
@@ -213,6 +237,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_admin_pins: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

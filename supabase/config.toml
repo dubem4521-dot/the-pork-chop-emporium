@@ -1,1 +1,14 @@
 project_id = "aflsmdjfjjxlbnbcwdte"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[functions.send-admin-pin]
+verify_jwt = false
+
+[functions.verify-admin-pin]
+verify_jwt = false

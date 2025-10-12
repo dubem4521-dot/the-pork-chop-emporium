@@ -42,23 +42,25 @@ const AdminLogin = () => {
     const emailInput = formData.get("admin-email") as string;
     setEmail(emailInput);
 
-    // Send OTP to email
-    const { error } = await supabase.auth.signInWithOtp({
-      email: emailInput,
-      options: {
-        shouldCreateUser: false, // Don't create new users
-      },
-    });
+    try {
+      // Call edge function to send 4-digit PIN
+      const { data, error } = await supabase.functions.invoke('send-admin-pin', {
+        body: { email: emailInput }
+      });
 
-    if (error) {
-      toast.error(error.message);
+      if (error) {
+        toast.error(error.message || 'Failed to send PIN');
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success("4-digit PIN sent to your email");
+      setStep('otp');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send PIN');
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    toast.success("Verification code sent to your email");
-    setStep('otp');
-    setIsLoading(false);
   };
 
   const handleVerifyOTP = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -66,38 +68,63 @@ const AdminLogin = () => {
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    const token = formData.get("otp") as string;
+    const pin = formData.get("otp") as string;
 
-    const { data: authData, error: authError } = await supabase.auth.verifyOtp({
-      email,
-      token,
-      type: 'email',
-    });
+    try {
+      // Call edge function to verify 4-digit PIN
+      const { data, error } = await supabase.functions.invoke('verify-admin-pin', {
+        body: { email, pin }
+      });
 
-    if (authError) {
-      toast.error(authError.message);
+      if (error || !data?.success) {
+        toast.error(data?.error || error?.message || 'Invalid PIN');
+        setIsLoading(false);
+        return;
+      }
+
+      // Sign in with the session from the edge function
+      if (data.session?.properties?.hashed_token) {
+        const { error: signInError } = await supabase.auth.verifyOtp({
+          token_hash: data.session.properties.hashed_token,
+          type: 'magiclink',
+        });
+
+        if (signInError) {
+          toast.error('Failed to establish session');
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Verify admin role
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Authentication failed");
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: roles, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (roleError || !roles) {
+        await supabase.auth.signOut();
+        toast.error("Access denied. Admin credentials required.");
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success("Admin access granted");
+      navigate("/admin/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || 'Verification failed');
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    // Check if user has admin role
-    const { data: roles, error: roleError } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", authData.user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (roleError || !roles) {
-      await supabase.auth.signOut();
-      toast.error("Access denied. Admin credentials required.");
-      setIsLoading(false);
-      return;
-    }
-
-    toast.success("Admin access granted");
-    navigate("/admin/dashboard");
-    setIsLoading(false);
   };
 
   return (
