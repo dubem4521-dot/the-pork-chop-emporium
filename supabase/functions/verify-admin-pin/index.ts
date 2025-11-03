@@ -71,6 +71,8 @@ serve(async (req) => {
 
     const existingUser = users?.find(u => u.email === email);
     
+    let userId = existingUser?.id;
+
     // If user doesn't exist, create them
     if (!existingUser) {
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -86,7 +88,26 @@ serve(async (req) => {
         throw new Error('Failed to create user');
       }
 
-      console.log('New user created:', newUser.user?.id);
+      userId = newUser.user?.id;
+      console.log('New user created:', userId);
+    }
+
+    // Ensure admin role is assigned
+    if (userId) {
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: userId, 
+          role: 'admin' 
+        }, { 
+          onConflict: 'user_id,role' 
+        });
+
+      if (roleError) {
+        console.error('Error assigning admin role:', roleError);
+      } else {
+        console.log('Admin role assigned to user:', userId);
+      }
     }
 
     // Generate a session token for the user
