@@ -75,14 +75,14 @@ export const Navigation = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border shadow-[var(--shadow-card)]">
-      <div className="container mx-auto px-4 py-4">
+    <nav className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border shadow-sm">
+      <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
             <img 
               src={logo} 
               alt="PureBreed Pork - Tinashe & Jeff" 
-              className="h-20 w-20 object-contain group-hover:scale-105 transition-transform"
+              className="h-14 w-14 object-contain group-hover:scale-105 transition-transform"
             />
           </Link>
 
@@ -104,8 +104,8 @@ export const Navigation = () => {
               About
             </Link>
             <Link to="/cart">
-              <Button variant="outline" size="icon" className="relative">
-                <ShoppingCart className="h-5 w-5" />
+              <Button variant="outline" size="icon" className="relative h-8 w-8">
+                <ShoppingCart className="h-4 w-4" />
                 {cartCount > 0 && (
                   <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
                     {cartCount}
@@ -115,16 +115,16 @@ export const Navigation = () => {
             </Link>
             {user ? (
               <Link to="/profile">
-                <Avatar className="h-10 w-10 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
-                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                <Avatar className="h-8 w-8 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-sm">
                     {userName ? userName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
               </Link>
             ) : (
               <Link to="/auth">
-                <Button variant="ghost" size="icon">
-                  <User className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <User className="h-4 w-4" />
                 </Button>
               </Link>
             )}

@@ -39,8 +39,9 @@ export const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <Phone className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <p className="text-sm text-muted-foreground">+27 123 456 789</p>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">+27 83 265 7249</p>
+                  <p className="text-sm text-muted-foreground">+27 78 756 8574</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -52,7 +53,7 @@ export const Footer = () => {
               <div className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-primary mt-0.5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Farm Location, South Africa</p>
+                  <p className="text-sm text-muted-foreground">South Africa</p>
                 </div>
               </div>
             </div>
