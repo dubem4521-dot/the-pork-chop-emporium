@@ -1,12 +1,14 @@
 import { Navigation } from "@/components/Navigation";
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
+import { SEOHead } from "@/components/SEOHead";
 import { toast } from "sonner";
 import heroImage from "@/assets/hero-farm.jpg";
 import porkCuts from "@/assets/pork-cuts.jpg";
 import porkChops from "@/assets/pork-chops.jpg";
 import porkRibs from "@/assets/pork-ribs.jpg";
 import porkBelly from "@/assets/pork-belly.jpg";
+import brandBg from "@/assets/brand-bg.png";
 
 const products = [
   {
@@ -47,8 +49,19 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      <SEOHead />
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url(${brandBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="relative z-10">
+        <Navigation />
       
       {/* Hero Section */}
       <section className="relative h-[600px] overflow-hidden">
@@ -112,6 +125,7 @@ const Home = () => {
           </Button>
         </div>
       </section>
+      </div>
     </div>
   );
 };

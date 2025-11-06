@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, PieChart, Pie, Cell, Legend, LineChart, Line, AreaChart, Area } from "recharts";
+import brandBg from "@/assets/brand-bg.png";
 
 interface Product {
   id: string;
@@ -446,7 +447,17 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background relative">
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url(${brandBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="relative z-10 flex min-h-screen">
       {/* Sidebar */}
       <aside className={`${sidebarCollapsed ? 'w-20' : 'w-64'} bg-card border-r border-border transition-all duration-300 flex flex-col`}>
         <div className="p-6 border-b border-border">
@@ -950,6 +961,7 @@ const AdminDashboard = () => {
             </TabsContent>
           </Tabs>
         </div>
+      </div>
       </div>
     </div>
   );

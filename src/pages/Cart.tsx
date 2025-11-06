@@ -1,9 +1,11 @@
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SEOHead } from "@/components/SEOHead";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import brandBg from "@/assets/brand-bg.png";
 
 interface CartItem {
   id: string;
@@ -55,8 +57,19 @@ const Cart = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      <SEOHead title="Shopping Cart - PureBreed Pork" description="Review your cart items and proceed to checkout" />
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url(${brandBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="relative z-10">
+        <Navigation />
       
       <div className="container mx-auto px-4 py-20">
         <h1 className="text-4xl font-bold text-foreground mb-12 animate-fade-in">Shopping Cart</h1>
@@ -158,6 +171,7 @@ const Cart = () => {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );
