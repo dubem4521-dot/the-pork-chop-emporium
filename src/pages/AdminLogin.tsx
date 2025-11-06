@@ -154,7 +154,7 @@ const AdminLogin = () => {
                 id="admin-email"
                 name="admin-email"
                 type="email"
-                placeholder="Email"
+                placeholder="admin@example.com"
                 required
               />
             </div>
@@ -173,6 +173,7 @@ const AdminLogin = () => {
           <form onSubmit={handleVerifyOTP} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="otp">Verification Code</Label>
+              <p className="text-sm text-muted-foreground mb-2">Code sent to: {email}</p>
               <Input
                 id="otp"
                 name="otp"

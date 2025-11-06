@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { TrendingProducts } from "@/components/TrendingProducts";
 import { HeroCarousel } from "@/components/HeroCarousel";
+import { TestimonialsSection } from "@/components/TestimonialsSection";
+import { SEOHead } from "@/components/SEOHead";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Award, Truck, Heart } from "lucide-react";
+import brandBg from "@/assets/brand-bg.png";
 
 interface Product {
   id: string;
@@ -108,8 +111,19 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      <SEOHead />
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url(${brandBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="relative z-10">
+        <Navigation />
       
       {/* Hero Carousel */}
       <HeroCarousel />
@@ -151,6 +165,9 @@ const Home = () => {
 
       {/* Trending Products Section */}
       <TrendingProducts />
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
 
       {/* Products Section */}
       <section className="py-20 bg-gradient-to-b from-background to-background/50">
@@ -210,6 +227,7 @@ const Home = () => {
       </section>
 
       <Footer />
+      </div>
     </div>
   );
 };

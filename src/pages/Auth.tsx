@@ -6,8 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SEOHead } from "@/components/SEOHead";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import brandBg from "@/assets/brand-bg.png";
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -66,8 +68,22 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      <SEOHead 
+        title="Login or Sign Up - PureBreed Pork"
+        description="Sign in to your PureBreed Pork account or create a new one to start ordering premium quality farm-fresh pork products."
+      />
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url(${brandBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="relative z-10">
+        <Navigation />
       
       <div className="container mx-auto px-4 py-20">
         <div className="max-w-md mx-auto">
@@ -173,6 +189,7 @@ const Auth = () => {
             By continuing, you agree to our Terms of Service and Privacy Policy
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

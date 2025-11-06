@@ -1,12 +1,14 @@
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SEOHead } from "@/components/SEOHead";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import brandBg from "@/assets/brand-bg.png";
 
 interface CartItem {
   id: string;
@@ -171,6 +173,28 @@ const Cart = () => {
       return;
     }
 
+    // Send order notification emails
+    try {
+      await supabase.functions.invoke('send-order-notification', {
+        body: {
+          orderId: order.id,
+          customerEmail: user.email,
+          orderDetails: {
+            items: cartItems.map(item => ({
+              name: item.products.name,
+              quantity: item.quantity,
+              price: Number(item.products.price)
+            })),
+            total: total,
+            phone: phone,
+            address: address
+          }
+        }
+      });
+    } catch (emailError) {
+      console.error("Failed to send notification emails:", emailError);
+    }
+
     // Clear cart
     const { error: clearError } = await supabase
       .from("cart_items")
@@ -197,8 +221,22 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      <SEOHead 
+        title="Shopping Cart - PureBreed Pork"
+        description="Review your premium pork selections and complete your order. Farm-fresh quality delivered to your door."
+      />
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url(${brandBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="relative z-10">
+        <Navigation />
       
       <div className="container mx-auto px-4 py-20">
         <h1 className="text-4xl font-bold text-foreground mb-12 animate-fade-in">Shopping Cart</h1>
@@ -337,6 +375,7 @@ const Cart = () => {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

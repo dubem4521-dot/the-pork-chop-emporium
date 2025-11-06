@@ -6,10 +6,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SEOHead } from "@/components/SEOHead";
 import { toast } from "sonner";
 import { LogOut, User, Mail, Phone, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import brandBg from "@/assets/brand-bg.png";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -107,8 +109,22 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      <SEOHead 
+        title="My Profile - PureBreed Pork"
+        description="Manage your PureBreed Pork account information, delivery address, and contact details."
+      />
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url(${brandBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="relative z-10">
+        <Navigation />
       
       <div className="container mx-auto px-4 py-20">
         <div className="max-w-2xl mx-auto">
@@ -233,6 +249,7 @@ const Profile = () => {
             </div>
           </Card>
         </div>
+      </div>
       </div>
     </div>
   );

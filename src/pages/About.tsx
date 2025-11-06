@@ -2,15 +2,32 @@ import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Footer } from "@/components/Footer";
 import { ByTheNumbers } from "@/components/ByTheNumbers";
+import { SEOHead } from "@/components/SEOHead";
 import { Heart, Award, Users, Calendar } from "lucide-react";
 import heroFarm from "@/assets/hero-farm.jpg";
 import porkChops from "@/assets/pork-chops.jpg";
 import porkBelly from "@/assets/pork-belly.jpg";
+import brandBg from "@/assets/brand-bg.png";
 
 export const About = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      <SEOHead 
+        title="About Us - PureBreed Pork | Tinashe & Jeff's Farm"
+        description="Meet Tinashe and Jeff, founders of PureBreed Pork. Learn about our family farm, ethical farming practices, and commitment to premium quality pork since 2019."
+        keywords="about purebreed, tinashe jeff farm, ethical farming, family farm, premium pork farm, sustainable farming, south africa farm"
+      />
+      <div 
+        className="fixed inset-0 z-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url(${brandBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      />
+      <div className="relative z-10">
+        <Navigation />
       
       {/* Hero Section */}
       <section className="relative h-[500px] overflow-hidden">
@@ -157,6 +174,7 @@ export const About = () => {
 
       <ByTheNumbers />
       <Footer />
+      </div>
     </div>
   );
 };
