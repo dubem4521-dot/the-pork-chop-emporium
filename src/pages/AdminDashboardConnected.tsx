@@ -9,7 +9,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Package, ShoppingCart, DollarSign, Plus, Edit, Trash2, LogOut, TrendingUp, Users, BarChart3, PieChart as PieChartIcon, Settings, Bell, Home, Target, UserPlus } from "lucide-react";
+import { Package, ShoppingCart, DollarSign, Plus, Edit, Trash2, LogOut, TrendingUp, Users, BarChart3, PieChart as PieChartIcon, Settings, Bell, Home, Target, UserPlus, MessageSquare, Star, Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin } from "@/hooks/useAdmin";
@@ -39,18 +39,29 @@ interface Order {
   };
 }
 
+interface Review {
+  id: string;
+  user_id: string;
+  name: string;
+  comment: string;
+  rating: number;
+  approved: boolean;
+  created_at: string;
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [trafficPeriod, setTrafficPeriod] = useState<"day" | "week" | "month">("week");
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [topProducts, setTopProducts] = useState<any[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeGoal, setActiveGoal] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<"products" | "orders" | "add-product">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "add-product" | "reviews">("products");
   const [showAddAdminDialog, setShowAddAdminDialog] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [adminVerificationPin, setAdminVerificationPin] = useState("");
@@ -99,15 +110,31 @@ const AdminDashboard = () => {
         )
         .subscribe();
 
+      const reviewsChannel = supabase
+        .channel('admin-reviews')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'reviews'
+          },
+          () => {
+            loadReviews();
+          }
+        )
+        .subscribe();
+
       return () => {
         supabase.removeChannel(ordersChannel);
         supabase.removeChannel(productsChannel);
+        supabase.removeChannel(reviewsChannel);
       };
     }
   }, [isAdmin]);
 
   const loadData = async () => {
-    await Promise.all([loadProducts(), loadOrders(), loadCustomers(), loadTopProducts()]);
+    await Promise.all([loadProducts(), loadOrders(), loadCustomers(), loadTopProducts(), loadReviews()]);
     setLoading(false);
   };
 
@@ -194,6 +221,20 @@ const AdminDashboard = () => {
     );
 
     setOrders(ordersWithProfiles as Order[]);
+  };
+
+  const loadReviews = async () => {
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast.error("Failed to load reviews");
+      console.error(error);
+    } else {
+      setReviews(data || []);
+    }
   };
 
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0);
@@ -366,6 +407,32 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleApproveReview = async (reviewId: string) => {
+    const { error } = await supabase
+      .from("reviews")
+      .update({ approved: true })
+      .eq("id", reviewId);
+
+    if (error) {
+      toast.error("Failed to approve review");
+    } else {
+      toast.success("Review approved successfully");
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    const { error } = await supabase
+      .from("reviews")
+      .delete()
+      .eq("id", reviewId);
+
+    if (error) {
+      toast.error("Failed to delete review");
+    } else {
+      toast.success("Review deleted successfully");
+    }
+  };
+
   const handleRequestAddAdmin = async () => {
     if (!newAdminEmail) {
       toast.error("Please enter an email address");
@@ -493,6 +560,15 @@ const AdminDashboard = () => {
           >
             <Plus className="h-5 w-5" />
             {!sidebarCollapsed && <span>Add Product</span>}
+          </button>
+          <button 
+            onClick={() => setActiveTab("reviews")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              activeTab === "reviews" ? "bg-primary/10 text-primary font-medium" : "hover:bg-muted"
+            }`}
+          >
+            <MessageSquare className="h-5 w-5" />
+            {!sidebarCollapsed && <span>Reviews</span>}
           </button>
         </nav>
 
@@ -798,11 +874,12 @@ const AdminDashboard = () => {
           </div>
 
           {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "products" | "orders" | "add-product")} className="animate-fade-in-up">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "products" | "orders" | "add-product" | "reviews")} className="animate-fade-in-up">
             <TabsList className="mb-6">
               <TabsTrigger value="products">Products</TabsTrigger>
               <TabsTrigger value="orders">Orders</TabsTrigger>
               <TabsTrigger value="add-product">Add Product</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>
 
             <TabsContent value="products">
@@ -958,6 +1035,107 @@ const AdminDashboard = () => {
                   </Button>
                 </form>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="reviews">
+              <div className="space-y-6">
+                <Card className="p-6">
+                  <h2 className="text-xl font-bold text-foreground mb-6">Pending Reviews</h2>
+                  {reviews.filter(r => !r.approved).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No pending reviews</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {reviews.filter(r => !r.approved).map((review) => (
+                        <div key={review.id} className="p-4 border border-border rounded-lg bg-card hover:bg-muted/50 transition-colors">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h3 className="font-semibold text-lg">{review.name}</h3>
+                              <div className="flex items-center gap-1 mt-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`h-4 w-4 ${
+                                      i < review.rating
+                                        ? "fill-yellow-400 text-yellow-400"
+                                        : "text-muted-foreground"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleApproveReview(review.id)}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteReview(review.id)}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                          <p className="text-muted-foreground">{review.comment}</p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Submitted: {new Date(review.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+
+                <Card className="p-6">
+                  <h2 className="text-xl font-bold text-foreground mb-6">Approved Reviews</h2>
+                  {reviews.filter(r => r.approved).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No approved reviews yet</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {reviews.filter(r => r.approved).map((review) => (
+                        <div key={review.id} className="p-4 border border-border rounded-lg bg-card hover:bg-muted/50 transition-colors">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h3 className="font-semibold text-lg">{review.name}</h3>
+                              <div className="flex items-center gap-1 mt-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`h-4 w-4 ${
+                                      i < review.rating
+                                        ? "fill-yellow-400 text-yellow-400"
+                                        : "text-muted-foreground"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteReview(review.id)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                          <p className="text-muted-foreground">{review.comment}</p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Approved: {new Date(review.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
