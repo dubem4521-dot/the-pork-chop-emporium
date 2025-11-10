@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Star, Quote } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -122,33 +123,44 @@ export const TestimonialsSection = () => {
             <p className="text-white/60 mb-6">No reviews yet. Be the first to share your experience!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {reviews.map((review, index) => (
-              <Card 
-                key={review.id} 
-                className="p-8 bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 animate-fade-in hover:scale-105 hover:shadow-2xl"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="mb-4">
-                  <Quote className="h-8 w-8 text-primary/60 mb-4" />
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-5 w-5 ${
-                          i < review.rating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-white/20"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-white/90 mb-6 italic leading-relaxed">&ldquo;{review.comment}&rdquo;</p>
-                <p className="font-semibold text-white text-lg">— {review.name}</p>
-              </Card>
-            ))}
-          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full mb-12"
+          >
+            <CarouselContent className="-ml-4">
+              {reviews.map((review, index) => (
+                <CarouselItem key={review.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                  <Card 
+                    className="p-8 bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 animate-fade-in hover:scale-105 hover:shadow-2xl h-full"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <div className="mb-4">
+                      <Quote className="h-8 w-8 text-primary/60 mb-4" />
+                      <div className="flex gap-1 mb-4">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-5 w-5 ${
+                              i < review.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-white/20"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-white/90 mb-6 italic leading-relaxed">&ldquo;{review.comment}&rdquo;</p>
+                    <p className="font-semibold text-white text-lg">— {review.name}</p>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="bg-white/10 border-white/20 hover:bg-white/20 text-white" />
+            <CarouselNext className="bg-white/10 border-white/20 hover:bg-white/20 text-white" />
+          </Carousel>
         )}
 
         <div className="text-center">
